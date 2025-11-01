@@ -281,7 +281,7 @@ class WebGLRenderer {
             // Convert lat/lon to texture coordinates
             vec2 lonLatToTexture(vec2 lonLat) {
                 float u = (lonLat.x / 360.0) + 0.5;
-                float v = 0.5 - (lonLat.y / 180.0);
+                float v = 0.5 + (lonLat.y / 180.0);  // Flipped: north is down in texture coords
 
                 // Clamp to valid texture range
                 u = clamp(u, 0.0, 1.0);

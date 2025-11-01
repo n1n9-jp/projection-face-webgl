@@ -23,7 +23,7 @@ class GraticuleRenderer {
     projectMercator(lon, lat) {
         const x = (lon + 180) / 360;
         const latRad = lat * Math.PI / 180;
-        const y = 0.5 - Math.log(Math.tan(Math.PI / 4 + latRad / 2)) / (2 * Math.PI);
+        const y = 0.5 + Math.log(Math.tan(Math.PI / 4 + latRad / 2)) / (2 * Math.PI);
         return { x, y };
     }
 
@@ -35,7 +35,7 @@ class GraticuleRenderer {
         const k = 1 / (1 + cosc);
 
         const x = 0.5 + k * Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - k * Math.sin(latRad) * 0.5;
+        const y = 0.5 + k * Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
@@ -52,7 +52,7 @@ class GraticuleRenderer {
 
         return {
             x: 0.5 + x / (2 * Math.sqrt(2)),
-            y: 0.5 - y / Math.PI
+            y: 0.5 + y / Math.PI
         };
     }
 
@@ -65,7 +65,7 @@ class GraticuleRenderer {
         if (cosc < 0) return null; // Back side is hidden
 
         const x = 0.5 + Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - Math.sin(latRad) * 0.5;
+        const y = 0.5 + Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
@@ -79,7 +79,7 @@ class GraticuleRenderer {
         if (cosc <= 0) return null; // Back side is hidden
 
         const x = 0.5 + Math.atan2(Math.cos(latRad) * Math.sin(lonRad), cosc) * 0.5 / Math.PI;
-        const y = 0.5 - Math.atan2(Math.sin(latRad), Math.sqrt(Math.pow(cosc, 2) + Math.pow(Math.cos(latRad) * Math.sin(lonRad), 2))) * 0.5 / Math.PI;
+        const y = 0.5 + Math.atan2(Math.sin(latRad), Math.sqrt(Math.pow(cosc, 2) + Math.pow(Math.cos(latRad) * Math.sin(lonRad), 2))) * 0.5 / Math.PI;
 
         return { x, y };
     }
@@ -94,7 +94,7 @@ class GraticuleRenderer {
         }
 
         const x = 0.5 + lonRad * Math.cos(theta) / Math.PI;
-        const y = 0.5 - theta / Math.PI;
+        const y = 0.5 + theta / Math.PI;
 
         return { x, y };
     }
@@ -110,7 +110,7 @@ class GraticuleRenderer {
 
         const k = c / Math.sin(c);
         const x = 0.5 + k * Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - k * Math.sin(latRad) * 0.5;
+        const y = 0.5 + k * Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
