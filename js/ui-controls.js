@@ -20,8 +20,8 @@ class UIControls {
         this.isTransitioning = false;
 
         // Physics simulation (spring motion)
-        this.springStrength = 0.38;    // How strongly the spring pulls toward target (0.1-0.3)
-        this.damping = 0.95;           // Velocity damping per frame (0.85-0.95)
+        this.springStrength = 0.18;    // How strongly the spring pulls toward target (0.1-0.3)
+        this.damping = 0.90;           // Velocity damping per frame (0.85-0.95)
         this.velocity = 0;             // Current velocity
         this.currentProgress = 0;      // Current simulated progress value
 
