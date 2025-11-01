@@ -35,15 +35,18 @@
                         <button id="webcam-toggle" class="button button-primary" data-i18n="input.webcam">Webカメラを開く</button>
                     </div>
 
-                    <div class="control-group" id="camera-select-group" style="display: none;">
-                        <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
-                        <select id="camera-select" class="sample-selector">
-                            <option value="">カメラを選択</option>
-                        </select>
-                    </div>
-
-                    <div class="control-group">
-                        <button id="webcam-capture" class="button button-secondary" style="display: none;" data-i18n="input.capture">キャプチャ</button>
+                    <div id="webcam-preview" style="display: none;">
+                        <video id="webcam-video" autoplay playsinline style="width: 100%; height: auto; margin: 10px 0; border-radius: 4px; background: #000;"></video>
+                        <div class="control-group">
+                            <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
+                            <select id="camera-select" class="sample-selector">
+                                <option value="">カメラを選択</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <button id="webcam-capture" class="button button-secondary" data-i18n="input.capture">キャプチャ</button>
+                            <button id="webcam-stop" class="button button-secondary" data-i18n="input.stop" style="margin-left: 8px;">閉じる</button>
+                        </div>
                     </div>
 
                     <div class="control-group">
@@ -115,7 +118,6 @@
                 <div class="spinner"></div>
                 <p data-i18n="status.loading">処理中...</p>
             </div>
-            <video id="webcam-video" style="display: none;"></video>
         </section>
     </main>
 
