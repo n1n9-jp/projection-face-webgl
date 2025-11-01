@@ -313,19 +313,8 @@ class WebGLRenderer {
                 // Get longitude and latitude from current projection
                 vec2 lonLat = getInverseProjection(ndc);
 
-                // Apply rotation parameters
-                lonLat = applyRotation(lonLat);
-
-                // Convert to texture coordinates
-                vec2 texCoord = lonLatToTexture(lonLat);
-
-                // Sample texture from current projection
-                vec4 currentColor = texture(uTexture, texCoord);
-
-                // If transitioning, blend with previous projection
+                // If transitioning, blend with previous projection at geographic coordinate level
                 if (uTransitionProgress < 1.0) {
-                    // Temporarily switch to previous projection
-                    int savedProjectionType = uProjectionType;
                     // Calculate previous projection coordinates
                     vec2 prevLonLat;
                     if (uPreviousProjectionType == 0) prevLonLat = inverseMercator(ndc);
@@ -338,19 +327,20 @@ class WebGLRenderer {
                     else if (uPreviousProjectionType == 7) prevLonLat = inverseNaturalEarth(ndc);
                     else prevLonLat = vec2(0.0);
 
-                    // Apply rotation and convert to texture coordinates
-                    prevLonLat = applyRotation(prevLonLat);
-                    vec2 prevTexCoord = lonLatToTexture(prevLonLat);
-
-                    // Sample from previous projection
-                    vec4 prevColor = texture(uTexture, prevTexCoord);
-
-                    // Blend colors based on transition progress
-                    // 0.0 = 100% previous, 1.0 = 100% current
-                    currentColor = mix(prevColor, currentColor, uTransitionProgress);
+                    // BLEND AT GEOGRAPHIC COORDINATE LEVEL (Case A)
+                    // Interpolate between previous and current geographic coordinates
+                    // 0.0 = 100% previous projection, 1.0 = 100% current projection
+                    lonLat = mix(prevLonLat, lonLat, uTransitionProgress);
                 }
 
-                outColor = currentColor;
+                // Apply rotation parameters to the (possibly blended) geographic coordinates
+                lonLat = applyRotation(lonLat);
+
+                // Convert blended geographic coordinates to texture coordinates
+                vec2 texCoord = lonLatToTexture(lonLat);
+
+                // Sample texture from the blended geographic location
+                outColor = texture(uTexture, texCoord);
             }
         `;
     }
