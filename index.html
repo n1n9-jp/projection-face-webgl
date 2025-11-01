@@ -26,39 +26,52 @@
             <section class="control-section" data-section="input">
                 <h2 class="section-title" data-i18n="sections.input">入力</h2>
                 <div class="section-content">
-                    <div class="control-group">
-                        <label for="file-input" class="label" data-i18n="input.upload">画像をアップロード</label>
-                        <input type="file" id="file-input" accept="image/*" class="file-input">
-                    </div>
-
-                    <div class="control-group">
-                        <button id="webcam-toggle" class="button button-primary" data-i18n="input.webcam">Webカメラを開く</button>
-                    </div>
-
-                    <div id="camera-select-group" style="display: none; margin-top: 10px;">
-                        <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
-                        <select id="camera-select" class="sample-selector">
-                            <option value="">カメラを選択</option>
-                        </select>
-                    </div>
-
-                    <div id="webcam-preview" style="display: none; margin-top: 10px; width: 100%; flex-direction: column; gap: 8px;">
-                        <video id="webcam-video" autoplay playsinline muted style="width: 100%; height: 200px; background: #000; border-radius: 4px; display: block; object-fit: cover;"></video>
-                        <div style="display: flex; gap: 8px;">
-                            <button id="webcam-capture" class="button button-secondary" data-i18n="input.capture" style="flex: 1;">キャプチャ</button>
-                            <button id="webcam-stop" class="button button-secondary" data-i18n="input.stop" style="flex: 1;">閉じる</button>
+                    <!-- Upload Source -->
+                    <div>
+                        <h3 class="input-source-title" data-i18n="input.uploadSource">アップロード</h3>
+                        <div class="control-group">
+                            <label for="file-input" class="label" data-i18n="input.upload">画像をアップロード</label>
+                            <input type="file" id="file-input" accept="image/*" class="file-input">
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <label class="label" data-i18n="input.samples">サンプル画像</label>
-                        <select id="sample-selector" class="sample-selector">
-                            <option value="">サンプルを選択</option>
-                            <option value="samples/lena.png">Lena テスト画像</option>
-                            <option value="samples/self.png">顔写真</option>
-                        </select>
+                    <!-- Webcam Source -->
+                    <div>
+                        <h3 class="input-source-title" data-i18n="input.webcamSource">Webカメラ</h3>
+                        <div class="control-group">
+                            <button id="webcam-toggle" class="button button-primary" data-i18n="input.webcam">Webカメラを開く</button>
+                        </div>
+
+                        <div id="camera-select-group" style="display: none; margin-top: 10px;">
+                            <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
+                            <select id="camera-select" class="sample-selector">
+                                <option value="">カメラを選択</option>
+                            </select>
+                        </div>
+
+                        <div id="webcam-preview" style="display: none; margin-top: 10px; width: 100%; flex-direction: column; gap: 8px;">
+                            <video id="webcam-video" autoplay playsinline muted style="width: 100%; height: 200px; background: #000; border-radius: 4px; display: block; object-fit: cover;"></video>
+                            <div style="display: flex; gap: 8px;">
+                                <button id="webcam-capture" class="button button-secondary" data-i18n="input.capture" style="flex: 1;">キャプチャ</button>
+                                <button id="webcam-stop" class="button button-secondary" data-i18n="input.stop" style="flex: 1;">閉じる</button>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- Sample Images Source -->
+                    <div>
+                        <h3 class="input-source-title" data-i18n="input.samplesSource">サンプル画像</h3>
+                        <div class="control-group">
+                            <label for="sample-selector" class="label" data-i18n="input.samples">サンプルを選択</label>
+                            <select id="sample-selector" class="sample-selector">
+                                <option value="">サンプルを選択</option>
+                                <option value="samples/lena.png">Lena テスト画像</option>
+                                <option value="samples/self.png">顔写真</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Clear Button -->
                     <div class="control-group">
                         <button id="clear-btn" class="button button-secondary" data-i18n="input.clear">クリア</button>
                     </div>

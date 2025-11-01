@@ -125,6 +125,16 @@ html, body {
     border-bottom: 2px solid var(--color-border);
 }
 
+.input-source-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    color: var(--color-text);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
 .section-content {
     display: flex;
     flex-direction: column;
@@ -247,12 +257,18 @@ html, body {
 }
 
 .performance-info {
-    font-size: 13px;
-    color: var(--color-text-light);
+    font-size: 14px;
+    color: var(--color-text);
 }
 
 .performance-info p {
     margin: var(--spacing-xs) 0;
+    font-weight: 500;
+}
+
+#fps-counter {
+    font-weight: 600;
+    color: var(--color-primary);
 }
 
 /* Canvas Container */
