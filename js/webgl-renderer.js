@@ -473,6 +473,13 @@ class WebGLRenderer {
         this.gl.clearColor(0.9, 0.9, 0.9, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     }
+
+    clearTexture() {
+        if (this.texture) {
+            this.gl.deleteTexture(this.texture);
+            this.texture = null;
+        }
+    }
 }
 
 // Create global instance

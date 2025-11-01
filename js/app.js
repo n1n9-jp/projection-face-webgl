@@ -46,6 +46,7 @@ class MapProjectionApp {
 
         // When image is cleared
         inputHandler.onImageCleared(() => {
+            webglRenderer.clearTexture();
             webglRenderer.clear();
         });
 

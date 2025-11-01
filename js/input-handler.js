@@ -135,11 +135,22 @@ class InputHandler {
             // 許可を取得するために一度getUserMediaを呼ぶ
             if (requestPermission) {
                 try {
-                    const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    console.log('Requesting camera permission...');
+                    const tempStream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: false
+                    });
+                    console.log('Camera permission granted');
                     // すぐに停止
                     tempStream.getTracks().forEach(track => track.stop());
                 } catch (permError) {
-                    throw new Error(languageManager.t('error.cameraAccessDenied'));
+                    console.error('Permission error:', permError);
+                    if (permError.name === 'NotAllowedError') {
+                        alert('カメラへのアクセスが拒否されました。ブラウザの設定で許可してください。');
+                    } else {
+                        alert('カメラへのアクセスに失敗しました: ' + permError.message);
+                    }
+                    return;
                 }
             }
 
@@ -147,7 +158,8 @@ class InputHandler {
             this.availableCameras = devices.filter(device => device.kind === 'videoinput');
 
             if (this.availableCameras.length === 0) {
-                throw new Error(languageManager.t('error.cameraNotFound'));
+                alert('使用可能なカメラが見つかりません');
+                return;
             }
 
             this.populateCameraSelect();
@@ -191,13 +203,27 @@ class InputHandler {
                 audio: false
             };
 
+            console.log('Initializing webcam with constraints:', constraints);
             this.webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log('Webcam stream obtained:', this.webcamStream);
+
             this.webcamVideo.srcObject = this.webcamStream;
             this.isWebcamActive = true;
 
+            // video 要素の再生を確認
+            console.log('Setting video source object');
+            this.webcamVideo.onloadedmetadata = () => {
+                console.log('Video metadata loaded, playing...');
+                this.webcamVideo.play().catch(err => {
+                    console.error('Video play error:', err);
+                });
+            };
+
             this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを閉じる' : 'Close Webcam';
             this.webcamToggle.classList.add('active');
-            this.webcamPreview.style.display = 'block';
+            this.webcamPreview.style.display = 'flex';
+
+            console.log('Webcam initialized successfully');
         } catch (error) {
             console.error('Webcam initialization error:', error);
             let errorMessage = languageManager.t('error.cameraAccessDenied');
@@ -205,9 +231,12 @@ class InputHandler {
                 errorMessage = 'カメラが見つかりません';
             } else if (error.name === 'NotReadableError') {
                 errorMessage = 'カメラは既に使用中です';
+            } else if (error.name === 'NotAllowedError') {
+                errorMessage = 'カメラへのアクセスが拒否されました';
             }
             alert('エラー: ' + errorMessage);
-            throw error;
+            this.isWebcamActive = false;
+            this.webcamPreview.style.display = 'none';
         }
     }
 
