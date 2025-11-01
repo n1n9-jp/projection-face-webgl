@@ -19,6 +19,12 @@ class UIControls {
         this.nextProjection = null;
         this.isTransitioning = false;
 
+        // Physics simulation (spring motion)
+        this.springStrength = 0.38;    // How strongly the spring pulls toward target (0.1-0.3)
+        this.damping = 0.95;           // Velocity damping per frame (0.85-0.95)
+        this.velocity = 0;             // Current velocity
+        this.currentProgress = 0;      // Current simulated progress value
+
         this.callbacks = {
             projectionChange: [],
             paramChange: [],
@@ -153,6 +159,10 @@ class UIControls {
         this.transitionStartTime = performance.now();
         this.isTransitioning = true;
 
+        // Reset physics simulation
+        this.velocity = 0;
+        this.currentProgress = 0;
+
         // Update projection manager
         projectionManager.setProjection(newProjectionId);
 
@@ -174,18 +184,28 @@ class UIControls {
         // Apply easeInOutBack easing function
         const easedProgress = this.easeInOutBack(linearProgress);
 
-        // Apply amplitude multiplier (1.5 means the value can go from 0.0 to 1.5)
-        // This creates an overshoot/inertia effect where it goes beyond the target and back
-        const amplified = easedProgress * 1.5;
+        // Calculate target progress with amplitude multiplier
+        const targetProgress = easedProgress * 1.5;
+
+        // Apply physics simulation (spring motion with damping)
+        // velocity += (target - current) * springStrength
+        this.velocity += (targetProgress - this.currentProgress) * this.springStrength;
+        // Apply damping to velocity
+        this.velocity *= this.damping;
+        // Update current progress
+        this.currentProgress += this.velocity;
 
         // Complete transition
         if (linearProgress >= 1.0) {
             this.isTransitioning = false;
             this.transitionStartTime = null;
             this.previousProjection = null;
+            // Snap to final value
+            this.currentProgress = 1.0;
+            this.velocity = 0;
         }
 
-        return amplified;
+        return this.currentProgress;
     }
 
     // easeInOutBack: https://easings.net/#easeInOutBack
