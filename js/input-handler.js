@@ -3,6 +3,7 @@ class InputHandler {
         this.fileInput = document.getElementById('file-input');
         this.webcamToggle = document.getElementById('webcam-toggle');
         this.webcamPreview = document.getElementById('webcam-preview');
+        this.cameraSelectGroup = document.getElementById('camera-select-group');
         this.webcamCapture = document.getElementById('webcam-capture');
         this.webcamStop = document.getElementById('webcam-stop');
         this.cameraSelect = document.getElementById('camera-select');
@@ -163,6 +164,10 @@ class InputHandler {
             }
 
             this.populateCameraSelect();
+            // webcam-preview を表示
+            this.webcamPreview.style.display = 'block';
+            // camera-select-group を表示
+            this.cameraSelectGroup.style.display = 'block';
             // 最初のカメラで初期化
             await this.initializeWebcam(this.availableCameras[0].deviceId);
         } catch (error) {
@@ -221,7 +226,6 @@ class InputHandler {
 
             this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを閉じる' : 'Close Webcam';
             this.webcamToggle.classList.add('active');
-            this.webcamPreview.style.display = 'flex';
 
             console.log('Webcam initialized successfully');
         } catch (error) {
@@ -237,6 +241,7 @@ class InputHandler {
             alert('エラー: ' + errorMessage);
             this.isWebcamActive = false;
             this.webcamPreview.style.display = 'none';
+            this.cameraSelectGroup.style.display = 'none';
         }
     }
 
@@ -288,6 +293,7 @@ class InputHandler {
         this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを開く' : 'Open Webcam';
         this.webcamToggle.classList.remove('active');
         this.webcamPreview.style.display = 'none';
+        this.cameraSelectGroup.style.display = 'none';
     }
 
     clearImage() {

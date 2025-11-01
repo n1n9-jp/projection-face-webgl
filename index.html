@@ -35,15 +35,16 @@
                         <button id="webcam-toggle" class="button button-primary" data-i18n="input.webcam">Webカメラを開く</button>
                     </div>
 
-                    <div id="webcam-preview" style="display: none; flex-direction: column; gap: 8px; background: #000; padding: 8px; border-radius: 4px; min-height: 320px;">
-                        <video id="webcam-video" autoplay playsinline muted style="width: 100%; flex: 1; min-height: 240px; background: #000; border-radius: 4px; object-fit: cover;"></video>
-                        <div class="control-group" style="margin-top: 0;">
-                            <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
-                            <select id="camera-select" class="sample-selector">
-                                <option value="">カメラを選択</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
+                    <div id="camera-select-group" style="display: none; margin-top: 10px;">
+                        <label for="camera-select" class="label" data-i18n="input.selectCamera">カメラを選択</label>
+                        <select id="camera-select" class="sample-selector">
+                            <option value="">カメラを選択</option>
+                        </select>
+                    </div>
+
+                    <div id="webcam-preview" style="display: none; margin-top: 10px;">
+                        <video id="webcam-video" autoplay playsinline muted style="width: 100%; background: #000; border-radius: 4px; display: block; min-height: 240px;"></video>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
                             <button id="webcam-capture" class="button button-secondary" data-i18n="input.capture" style="flex: 1;">キャプチャ</button>
                             <button id="webcam-stop" class="button button-secondary" data-i18n="input.stop" style="flex: 1;">閉じる</button>
                         </div>
