@@ -13,7 +13,7 @@ class UIControls {
         this.langToggle = document.getElementById('lang-toggle');
 
         // Transition management
-        this.transitionDuration = 1000; // milliseconds (1 second)
+        this.transitionDuration = 3000; // milliseconds
         this.transitionStartTime = null;
         this.previousProjection = null;
         this.nextProjection = null;
