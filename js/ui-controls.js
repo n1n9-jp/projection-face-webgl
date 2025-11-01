@@ -187,7 +187,7 @@ class UIControls {
     // easeInOutBack: https://easings.net/#easeInOutBack
     // Smooth back-and-forth easing with overshoot effect
     easeInOutBack(t) {
-        const c1 = 1.70158;
+        const c1 = 2.5;  // Increased overshoot amount (from 1.70158)
         const c2 = c1 * 1.525;
 
         return t < 0.5
