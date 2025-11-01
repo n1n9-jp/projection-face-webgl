@@ -138,6 +138,7 @@ class WebGLRenderer {
                 // Scale factor for stereographic
                 float scale = 0.5;
                 vec2 p = (uv - 0.5) / scale;
+                p.y = -p.y;  // Flip Y to match WebGL coordinate system
                 float rho2 = dot(p, p);
 
                 if (rho2 > 4.0) return vec2(0.0, -90.0); // Outside view
@@ -200,6 +201,7 @@ class WebGLRenderer {
             // Azimuthal Equidistant projection inverse
             vec2 inverseAzimuthalEquidistant(vec2 uv) {
                 vec2 p = (uv - 0.5) * 2.0;
+                p.y = -p.y;  // Flip Y to match WebGL coordinate system
                 float rho = length(p);
 
                 if (rho > PI) return vec2(0.0, -90.0);
@@ -217,6 +219,7 @@ class WebGLRenderer {
             // Orthographic projection inverse
             vec2 inverseOrthographic(vec2 uv) {
                 vec2 p = (uv - 0.5) * 2.0;
+                p.y = -p.y;  // Flip Y to match WebGL coordinate system
                 float x2y2 = dot(p, p);
 
                 if (x2y2 > 1.0) return vec2(0.0, -90.0); // Outside view
@@ -231,6 +234,7 @@ class WebGLRenderer {
             // Gnomonic projection inverse
             vec2 inverseGnomonic(vec2 uv) {
                 vec2 p = (uv - 0.5) * 2.0;
+                p.y = -p.y;  // Flip Y to match WebGL coordinate system
                 float x2y2 = dot(p, p);
 
                 float z = 1.0 / sqrt(1.0 + x2y2);
