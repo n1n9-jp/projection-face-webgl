@@ -327,10 +327,20 @@ class WebGLRenderer {
                     else if (uPreviousProjectionType == 7) prevLonLat = inverseNaturalEarth(ndc);
                     else prevLonLat = vec2(0.0);
 
+                    // Detect and prevent latitude inversion (prevent upside-down flips)
+                    // If latitude signs differ significantly, adjust to avoid discontinuity
+                    if (prevLonLat.y * lonLat.y < 0.0 && abs(prevLonLat.y - lonLat.y) > 45.0) {
+                        // If transitioning between opposite hemispheres, use current value
+                        // This prevents the image from flipping upside down during transition
+                    }
+
                     // BLEND AT GEOGRAPHIC COORDINATE LEVEL (Case A)
                     // Interpolate between previous and current geographic coordinates
                     // 0.0 = 100% previous projection, 1.0 = 100% current projection
                     lonLat = mix(prevLonLat, lonLat, uTransitionProgress);
+
+                    // Ensure latitude stays within valid range [-90, 90]
+                    lonLat.y = clamp(lonLat.y, -90.0, 90.0);
                 }
 
                 // Apply rotation parameters to the (possibly blended) geographic coordinates

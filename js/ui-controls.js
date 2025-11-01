@@ -171,8 +171,8 @@ class UIControls {
         const elapsed = performance.now() - this.transitionStartTime;
         let linearProgress = Math.min(elapsed / this.transitionDuration, 1.0);
 
-        // Apply easeOutElastic easing function
-        const easedProgress = this.easeOutElastic(linearProgress);
+        // Apply easeInOutBack easing function
+        const easedProgress = this.easeInOutBack(linearProgress);
 
         // Complete transition
         if (linearProgress >= 1.0) {
@@ -184,14 +184,15 @@ class UIControls {
         return easedProgress;
     }
 
-    // easeOutElastic: https://easings.net/#easeOutElastic
-    // Creates a bouncy animation effect at the end
-    easeOutElastic(t) {
-        if (t === 0) return 0;
-        if (t === 1) return 1;
+    // easeInOutBack: https://easings.net/#easeInOutBack
+    // Smooth back-and-forth easing with overshoot effect
+    easeInOutBack(t) {
+        const c1 = 1.70158;
+        const c2 = c1 * 1.525;
 
-        const c5 = (2 * Math.PI) / 4.5;
-        return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c5) + 1;
+        return t < 0.5
+            ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+            : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
     }
 
     getCurrentTransitionInfo() {
