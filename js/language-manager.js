@@ -11,6 +11,7 @@ class LanguageManager {
                 'sections.performance': 'パフォーマンス',
                 'input.upload': '画像をアップロード',
                 'input.webcam': 'Webカメラを開く',
+                'input.selectCamera': 'カメラを選択',
                 'input.capture': 'キャプチャ',
                 'input.samples': 'サンプル画像',
                 'input.clear': 'クリア',
@@ -40,7 +41,9 @@ class LanguageManager {
                 'projections.naturalEarth.description': '妥協図法。様々な要素のバランスに優れています。',
                 'error.noWebGL': 'お使いのブラウザは WebGL に対応していません。',
                 'error.imageLoadFailed': '画像の読み込みに失敗しました。',
-                'error.cameraAccessDenied': 'カメラへのアクセスが拒否されました。'
+                'error.cameraAccessDenied': 'カメラへのアクセスが拒否されました。',
+                'error.cameraUnsupported': 'お使いのブラウザはカメラに対応していません。',
+                'error.cameraNotFound': 'カメラが見つかりません。'
             },
             en: {
                 'header.title': 'Map Projection Face Visualization - WebGL',
@@ -51,6 +54,7 @@ class LanguageManager {
                 'sections.performance': 'Performance',
                 'input.upload': 'Upload Image',
                 'input.webcam': 'Open Webcam',
+                'input.selectCamera': 'Select Camera',
                 'input.capture': 'Capture',
                 'input.samples': 'Sample Images',
                 'input.clear': 'Clear',
@@ -80,7 +84,9 @@ class LanguageManager {
                 'projections.naturalEarth.description': 'Compromise projection with balanced properties.',
                 'error.noWebGL': 'Your browser does not support WebGL.',
                 'error.imageLoadFailed': 'Failed to load image.',
-                'error.cameraAccessDenied': 'Camera access was denied.'
+                'error.cameraAccessDenied': 'Camera access was denied.',
+                'error.cameraUnsupported': 'Your browser does not support camera access.',
+                'error.cameraNotFound': 'No camera found.'
             }
         };
         this.callbacks = [];

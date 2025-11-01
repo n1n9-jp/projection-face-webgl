@@ -3,6 +3,8 @@ class InputHandler {
         this.fileInput = document.getElementById('file-input');
         this.webcamToggle = document.getElementById('webcam-toggle');
         this.webcamCapture = document.getElementById('webcam-capture');
+        this.cameraSelect = document.getElementById('camera-select');
+        this.cameraSelectGroup = document.getElementById('camera-select-group');
         this.sampleSelector = document.getElementById('sample-selector');
         this.webcamVideo = document.getElementById('webcam-video');
         this.loadingIndicator = document.getElementById('loading-indicator');
@@ -10,6 +12,7 @@ class InputHandler {
         this.webcamStream = null;
         this.currentImage = null;
         this.isWebcamActive = false;
+        this.availableCameras = [];
 
         this.callbacks = {
             imageLoaded: [],
@@ -53,11 +56,18 @@ class InputHandler {
         });
 
         // Webcam toggle
-        this.webcamToggle.addEventListener('click', () => {
+        this.webcamToggle.addEventListener('click', async () => {
             if (this.isWebcamActive) {
                 this.stopWebcam();
             } else {
-                this.initializeWebcam();
+                await this.enumerateCameras(true);
+            }
+        });
+
+        // Camera select
+        this.cameraSelect.addEventListener('change', (e) => {
+            if (e.target.value && this.isWebcamActive) {
+                this.initializeWebcam(e.target.value);
             }
         });
 
@@ -110,59 +120,90 @@ class InputHandler {
         img.src = samplePath;
     }
 
-    async initializeWebcam() {
+    async enumerateCameras(requestPermission = false) {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' }
-            });
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                throw new Error(languageManager.t('error.cameraUnsupported'));
+            }
 
-            this.webcamStream = stream;
-            this.webcamVideo.srcObject = stream;
+            // 許可を取得するために一度getUserMediaを呼ぶ
+            if (requestPermission) {
+                try {
+                    const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    // すぐに停止
+                    tempStream.getTracks().forEach(track => track.stop());
+                } catch (permError) {
+                    throw new Error(languageManager.t('error.cameraAccessDenied'));
+                }
+            }
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.availableCameras = devices.filter(device => device.kind === 'videoinput');
+
+            if (this.availableCameras.length === 0) {
+                throw new Error(languageManager.t('error.cameraNotFound'));
+            }
+
+            this.populateCameraSelect();
+            // 最初のカメラで初期化
+            await this.initializeWebcam(this.availableCameras[0].deviceId);
+        } catch (error) {
+            alert('エラー: ' + error.message);
+            console.error('Camera enumeration error:', error);
+        }
+    }
+
+    populateCameraSelect() {
+        this.cameraSelect.innerHTML = `<option value="">${languageManager.t('input.selectCamera')}</option>`;
+
+        this.availableCameras.forEach((camera, index) => {
+            const option = document.createElement('option');
+            option.value = camera.deviceId;
+            option.textContent = camera.label || `Camera ${index + 1}`;
+            this.cameraSelect.appendChild(option);
+        });
+
+        // 最初のカメラを自動選択
+        if (this.availableCameras.length > 0) {
+            this.cameraSelect.value = this.availableCameras[0].deviceId;
+        }
+    }
+
+    async initializeWebcam(deviceId = null) {
+        try {
+            // 既存のストリームを停止
+            if (this.webcamStream) {
+                this.stopWebcam();
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error(languageManager.t('error.cameraUnsupported'));
+            }
+
+            const constraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' },
+                audio: false
+            };
+
+            this.webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.webcamVideo.srcObject = this.webcamStream;
             this.isWebcamActive = true;
 
             this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを閉じる' : 'Close Webcam';
             this.webcamToggle.classList.add('active');
+            this.cameraSelectGroup.style.display = 'flex';
             this.webcamCapture.style.display = 'inline-block';
-
-            // Start streaming to canvas
-            this.startWebcamStream();
         } catch (error) {
-            alert(languageManager.t('error.cameraAccessDenied'));
-            console.error('Camera access error:', error);
+            console.error('Webcam initialization error:', error);
+            let errorMessage = languageManager.t('error.cameraAccessDenied');
+            if (error.name === 'NotFoundError') {
+                errorMessage = 'カメラが見つかりません';
+            } else if (error.name === 'NotReadableError') {
+                errorMessage = 'カメラは既に使用中です';
+            }
+            alert('エラー: ' + errorMessage);
+            throw error;
         }
-    }
-
-    startWebcamStream() {
-        let lastFrameTime = 0;
-        const frameInterval = 1000 / 15; // 15 fps for webcam stream
-
-        const streamFrame = () => {
-            if (!this.isWebcamActive) {
-                return;
-            }
-
-            const currentTime = performance.now();
-            if (currentTime - lastFrameTime >= frameInterval && this.webcamVideo.readyState === this.webcamVideo.HAVE_ENOUGH_DATA) {
-                lastFrameTime = currentTime;
-
-                // Create a canvas from the video frame
-                const canvas = document.createElement('canvas');
-                canvas.width = this.webcamVideo.videoWidth;
-                canvas.height = this.webcamVideo.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(this.webcamVideo, 0, 0);
-                const img = new Image();
-                img.src = canvas.toDataURL();
-                img.onload = () => {
-                    this.currentImage = img;
-                    this.callbacks.imageLoaded.forEach(cb => cb(img));
-                };
-            }
-
-            requestAnimationFrame(streamFrame);
-        };
-
-        requestAnimationFrame(streamFrame);
     }
 
     captureFromWebcam() {
@@ -191,6 +232,7 @@ class InputHandler {
         this.isWebcamActive = false;
         this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを開く' : 'Open Webcam';
         this.webcamToggle.classList.remove('active');
+        this.cameraSelectGroup.style.display = 'none';
         this.webcamCapture.style.display = 'none';
     }
 
