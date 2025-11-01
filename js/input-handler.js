@@ -136,12 +136,10 @@ class InputHandler {
             // 許可を取得するために一度getUserMediaを呼ぶ
             if (requestPermission) {
                 try {
-                    console.log('Requesting camera permission...');
                     const tempStream = await navigator.mediaDevices.getUserMedia({
                         video: true,
                         audio: false
                     });
-                    console.log('Camera permission granted');
                     // すぐに停止
                     tempStream.getTracks().forEach(track => track.stop());
                 } catch (permError) {
@@ -164,11 +162,15 @@ class InputHandler {
             }
 
             this.populateCameraSelect();
+
             // webcam-preview を表示
-            this.webcamPreview.style.display = 'block';
+            this.webcamPreview.style.display = 'flex';
+
             // camera-select-group を表示
             this.cameraSelectGroup.style.display = 'block';
+
             // 最初のカメラで初期化
+            console.log('About to initialize webcam with camera:', this.availableCameras[0].deviceId);
             await this.initializeWebcam(this.availableCameras[0].deviceId);
         } catch (error) {
             alert('エラー: ' + error.message);
@@ -208,17 +210,13 @@ class InputHandler {
                 audio: false
             };
 
-            console.log('Initializing webcam with constraints:', constraints);
             this.webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
-            console.log('Webcam stream obtained:', this.webcamStream);
-
             this.webcamVideo.srcObject = this.webcamStream;
+
             this.isWebcamActive = true;
 
             // video 要素の再生を確認
-            console.log('Setting video source object');
             this.webcamVideo.onloadedmetadata = () => {
-                console.log('Video metadata loaded, playing...');
                 this.webcamVideo.play().catch(err => {
                     console.error('Video play error:', err);
                 });
@@ -226,8 +224,6 @@ class InputHandler {
 
             this.webcamToggle.textContent = languageManager.currentLanguage === 'ja' ? 'Webカメラを閉じる' : 'Close Webcam';
             this.webcamToggle.classList.add('active');
-
-            console.log('Webcam initialized successfully');
         } catch (error) {
             console.error('Webcam initialization error:', error);
             let errorMessage = languageManager.t('error.cameraAccessDenied');
