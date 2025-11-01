@@ -108,45 +108,89 @@ class WebGLRenderer {
 
             const float PI = 3.14159265359;
             const float TWO_PI = 6.28318530718;
+            const float HALF_PI = 1.5707963267949;
+
+            // Helper functions
+            float asinSafe(float x) {
+                return asin(clamp(x, -1.0, 1.0));
+            }
+
+            float acosSafe(float x) {
+                return acos(clamp(x, -1.0, 1.0));
+            }
 
             // Mercator projection inverse
+            // Converts from screen coordinates to lat/lon
             vec2 inverseMercator(vec2 uv) {
-                float lon = (uv.x - 0.5) * 360.0;
-                float lat = 2.0 * atan(exp((0.5 - uv.y) * PI)) * 180.0 / PI - 90.0;
+                float x = (uv.x - 0.5) * 360.0;
+                float y = (0.5 - uv.y) * 180.0;
+
+                float lon = x;
+                float lat = 2.0 * atan(exp(y * PI / 180.0)) * 180.0 / PI - 90.0;
+
                 return vec2(lon, lat);
             }
 
             // Stereographic projection inverse
             vec2 inverseStereographic(vec2 uv) {
-                vec2 p = (uv - 0.5) * 2.0;
-                float rho = length(p);
-                if (rho == 0.0) return vec2(uRotationX, 90.0 - uRotationY);
+                // Scale factor for stereographic
+                float scale = 0.5;
+                vec2 p = (uv - 0.5) / scale;
+                float rho2 = dot(p, p);
 
-                float c = 2.0 * atan(rho / 2.0);
-                float lat = asin(cos(c)) * 180.0 / PI - uRotationY;
-                float lon = atan(p.x, -p.y) * 180.0 / PI + uRotationX;
+                if (rho2 > 4.0) return vec2(0.0, -90.0); // Outside view
+
+                float c = 2.0 * atan(sqrt(rho2) / 2.0);
+                float cosc = cos(c);
+                float sinc = sin(c);
+
+                float lat = asinSafe(p.y / sqrt(rho2) * sinc) * 180.0 / PI;
+                float lon = atan(p.x * sinc, sqrt(rho2) * cosc) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
 
-            // Equal Earth projection inverse
+            // Equal Earth projection inverse (simplified)
             vec2 inverseEqualEarth(vec2 uv) {
-                float x = (uv.x - 0.5) * 4.84814;
-                float y = (0.5 - uv.y) * 3.07496;
+                float x = (uv.x - 0.5) * 2.0;
+                float y = (0.5 - uv.y) * 1.0;
 
-                float lat = asin((y + 0.00652 * y * y * y) / 1.00694) * 180.0 / PI;
-                float lon = atan(x / (1.44708 - 0.54201 * cos(lat * PI / 180.0))) * 180.0 / PI;
+                // Denormalization for Equal Earth
+                float A = 1.44708;
+                float B = 0.54201;
+                float C = 0.00652;
+
+                // Newton-Raphson iterations for latitude
+                float phi = y;
+                for (int i = 0; i < 5; i++) {
+                    float cosPhi = cos(phi);
+                    float f = phi + C * phi * phi * phi - y / A;
+                    float fprime = 1.0 + 3.0 * C * phi * phi;
+                    phi = phi - f / fprime;
+                }
+
+                float lat = phi * 180.0 / PI;
+                float lon = x * PI / (2.0 * (A - B * cos(phi))) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
 
-            // Mollweide projection inverse
+            // Mollweide projection inverse (simplified)
             vec2 inverseMollweide(vec2 uv) {
                 float x = (uv.x - 0.5) * 4.0;
                 float y = (0.5 - uv.y) * 2.0;
 
-                float lat = asin(y) * 180.0 / PI;
-                float lon = atan(x, cos(lat * PI / 180.0)) * 180.0 / PI;
+                // Newton-Raphson for theta
+                float theta = y;
+                for (int i = 0; i < 5; i++) {
+                    float sinTheta = sin(theta);
+                    float f = theta + sinTheta - PI * y;
+                    float fprime = 1.0 + cos(theta);
+                    theta = theta - f / fprime;
+                }
+
+                float lat = asinSafe(2.0 * theta / PI) * 180.0 / PI;
+                float lon = x * PI / (2.0 * sqrt(2.0) * cos(theta)) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
@@ -156,10 +200,14 @@ class WebGLRenderer {
                 vec2 p = (uv - 0.5) * 2.0;
                 float rho = length(p);
 
-                if (rho > 1.5707963) return vec2(0.0, -90.0);
+                if (rho > PI) return vec2(0.0, -90.0);
 
-                float lat = acos(cos(rho) * sin(rho / rho)) * 180.0 / PI - uRotationY;
-                float lon = atan(p.x, -p.y) * 180.0 / PI + uRotationX;
+                float c = rho;
+                float cosc = cos(c);
+                float sinc = sin(c);
+
+                float lat = asinSafe(p.y / rho * sinc) * 180.0 / PI;
+                float lon = atan(p.x * sinc, rho * cosc) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
@@ -167,12 +215,13 @@ class WebGLRenderer {
             // Orthographic projection inverse
             vec2 inverseOrthographic(vec2 uv) {
                 vec2 p = (uv - 0.5) * 2.0;
-                float rho = length(p);
+                float x2y2 = dot(p, p);
 
-                if (rho > 1.0) return vec2(0.0, -90.0);
+                if (x2y2 > 1.0) return vec2(0.0, -90.0); // Outside view
 
-                float lat = asin(rho) * 180.0 / PI;
-                float lon = atan(p.x, -p.y) * 180.0 / PI;
+                float z = sqrt(1.0 - x2y2);
+                float lat = atan(p.y / z) * 180.0 / PI;
+                float lon = atan(p.x, z) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
@@ -180,52 +229,96 @@ class WebGLRenderer {
             // Gnomonic projection inverse
             vec2 inverseGnomonic(vec2 uv) {
                 vec2 p = (uv - 0.5) * 2.0;
-                float lat = atan(1.0 / length(vec2(p.x * p.x + p.y * p.y + 1.0, 1.0))) * 180.0 / PI;
-                float lon = atan(p.x, -p.y) * 180.0 / PI;
+                float x2y2 = dot(p, p);
+
+                float z = 1.0 / sqrt(1.0 + x2y2);
+                float lat = atan(p.y * z, z) * 180.0 / PI;
+                float lon = atan(p.x, z) * 180.0 / PI;
 
                 return vec2(lon, lat);
             }
 
-            // Natural Earth projection inverse
+            // Natural Earth projection inverse (simplified Equal Earth variant)
             vec2 inverseNaturalEarth(vec2 uv) {
-                float x = (uv.x - 0.5) * 4.84814;
-                float y = (0.5 - uv.y) * 3.07496;
+                float x = (uv.x - 0.5) * 2.0;
+                float y = (0.5 - uv.y) * 1.0;
 
-                float lat = asin((y + 0.00652 * y * y * y) / 1.00694) * 180.0 / PI;
-                float lon = atan(x / (1.44708 - 0.54201 * cos(lat * PI / 180.0))) * 180.0 / PI;
+                // Natural Earth coefficients (approximation)
+                float A = 1.40346;
+                float B = 0.50;
+
+                // Simplified Newton-Raphson
+                float phi = y;
+                for (int i = 0; i < 5; i++) {
+                    float cosPhi = cos(phi);
+                    float f = phi + B * phi * phi * phi - y / A;
+                    float fprime = 1.0 + 3.0 * B * phi * phi;
+                    phi = phi - f / fprime;
+                }
+
+                float lat = phi * 180.0 / PI;
+                float lon = x * PI / (2.0 * (A - B * cos(phi))) * 180.0 / PI;
 
                 return vec2(lon, lat);
+            }
+
+            // Apply rotation to lat/lon
+            vec2 applyRotation(vec2 lonLat) {
+                float lon = lonLat.x + uRotationX;
+                float lat = lonLat.y + uRotationY;
+
+                // Normalize longitude to [-180, 180]
+                lon = mod(lon + 180.0, 360.0) - 180.0;
+
+                // Clamp latitude to [-90, 90]
+                lat = clamp(lat, -90.0, 90.0);
+
+                return vec2(lon, lat);
+            }
+
+            // Convert lat/lon to texture coordinates
+            vec2 lonLatToTexture(vec2 lonLat) {
+                float u = (lonLat.x / 360.0) + 0.5;
+                float v = 0.5 - (lonLat.y / 180.0);
+
+                // Clamp to valid texture range
+                u = clamp(u, 0.0, 1.0);
+                v = clamp(v, 0.0, 1.0);
+
+                return vec2(u, v);
             }
 
             vec2 getInverseProjection(vec2 uv) {
-                if (uProjectionType == 0) return inverseMercator(uv);
-                if (uProjectionType == 1) return inverseStereographic(uv);
-                if (uProjectionType == 2) return inverseEqualEarth(uv);
-                if (uProjectionType == 3) return inverseMollweide(uv);
-                if (uProjectionType == 4) return inverseAzimuthalEquidistant(uv);
-                if (uProjectionType == 5) return inverseOrthographic(uv);
-                if (uProjectionType == 6) return inverseGnomonic(uv);
-                if (uProjectionType == 7) return inverseNaturalEarth(uv);
-                return vec2(0.0);
+                vec2 lonLat;
+
+                if (uProjectionType == 0) lonLat = inverseMercator(uv);
+                else if (uProjectionType == 1) lonLat = inverseStereographic(uv);
+                else if (uProjectionType == 2) lonLat = inverseEqualEarth(uv);
+                else if (uProjectionType == 3) lonLat = inverseMollweide(uv);
+                else if (uProjectionType == 4) lonLat = inverseAzimuthalEquidistant(uv);
+                else if (uProjectionType == 5) lonLat = inverseOrthographic(uv);
+                else if (uProjectionType == 6) lonLat = inverseGnomonic(uv);
+                else if (uProjectionType == 7) lonLat = inverseNaturalEarth(uv);
+                else lonLat = vec2(0.0);
+
+                return lonLat;
             }
 
             void main() {
-                // Normalized coordinates
+                // Normalized screen coordinates [0, 1]
                 vec2 ndc = gl_FragCoord.xy / uCanvasSize;
 
                 // Get longitude and latitude from projection
                 vec2 lonLat = getInverseProjection(ndc);
 
-                // Convert to image coordinates
-                // Assuming input image is Plate Carrée projection
-                float u = (lonLat.x / 360.0) + 0.5;
-                float v = 0.5 - (lonLat.y / 180.0);
+                // Apply rotation parameters
+                lonLat = applyRotation(lonLat);
 
-                // Clamp to texture bounds
-                u = clamp(u, 0.0, 1.0);
-                v = clamp(v, 0.0, 1.0);
+                // Convert to texture coordinates
+                vec2 texCoord = lonLatToTexture(lonLat);
 
-                outColor = texture(uTexture, vec2(u, v));
+                // Sample texture with bilinear filtering
+                outColor = texture(uTexture, texCoord);
             }
         `;
     }

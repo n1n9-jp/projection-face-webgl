@@ -24,6 +24,10 @@ class UIControls {
         this.populateProjectionSelector();
         this.setupEventListeners();
         this.updateProjectionInfo();
+
+        // Set initial language toggle button text
+        const currentLang = languageManager.currentLanguage;
+        this.langToggle.textContent = currentLang === 'ja' ? 'English' : '日本語';
     }
 
     populateProjectionSelector() {
