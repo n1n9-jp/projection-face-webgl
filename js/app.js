@@ -13,6 +13,9 @@ class MapProjectionApp {
             // Initialize WebGL renderer
             webglRenderer = new WebGLRenderer(this.canvas);
 
+            // Initialize graticule renderer
+            graticuleRenderer.resizeCanvas();
+
             // Initialize UI controls
             uiControls.initialize();
 
@@ -49,16 +52,19 @@ class MapProjectionApp {
         // When projection changes
         uiControls.onProjectionChange(() => {
             // Render will be called in animation loop
+            this.updateGraticule();
         });
 
         // When parameters change
         uiControls.onParamChange(() => {
             // Render will be called in animation loop
+            this.updateGraticule();
         });
 
         // When reset is clicked
         uiControls.onReset(() => {
             // Render will be called in animation loop
+            this.updateGraticule();
         });
 
         // When clear is clicked
@@ -69,6 +75,8 @@ class MapProjectionApp {
         // Handle window resize
         window.addEventListener('resize', () => {
             webglRenderer.resizeCanvas();
+            graticuleRenderer.resizeCanvas();
+            this.updateGraticule();
         });
 
         // Language change
@@ -105,10 +113,17 @@ class MapProjectionApp {
         });
     }
 
+    updateGraticule() {
+        const projection = projectionManager.getCurrentProjection();
+        const params = projectionManager.getParams();
+        graticuleRenderer.drawGraticule(projection.id, params.rotationX, params.rotationY);
+    }
+
     startAnimationLoop() {
         const animate = () => {
             webglRenderer.clear();
             webglRenderer.render();
+            this.updateGraticule();
             this.animationFrameId = requestAnimationFrame(animate);
         };
         animate();
