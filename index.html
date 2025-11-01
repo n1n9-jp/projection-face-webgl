@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Projection Face Visualization - WebGL</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1 class="title" data-i18n="header.title">顔の画像で学ぶ地図投影法 WebGL版</h1>
+            <div class="header-controls">
+                <select id="projection-selector" class="projection-selector" data-i18n-placeholder="projectionSelector">
+                    <!-- Projections will be populated by JavaScript -->
+                </select>
+                <button id="lang-toggle" class="lang-toggle" data-lang="en">English</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <aside class="sidebar">
+            <!-- Input Section -->
+            <section class="control-section" data-section="input">
+                <h2 class="section-title" data-i18n="sections.input">入力</h2>
+                <div class="section-content">
+                    <div class="control-group">
+                        <label for="file-input" class="label" data-i18n="input.upload">画像をアップロード</label>
+                        <input type="file" id="file-input" accept="image/*" class="file-input">
+                    </div>
+
+                    <div class="control-group">
+                        <button id="webcam-toggle" class="button button-primary" data-i18n="input.webcam">Webカメラを開く</button>
+                        <button id="webcam-capture" class="button button-secondary" style="display: none;" data-i18n="input.capture">キャプチャ</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="label" data-i18n="input.samples">サンプル画像</label>
+                        <select id="sample-selector" class="sample-selector">
+                            <option value="">サンプルを選択</option>
+                            <option value="samples/lena.png">Lena テスト画像</option>
+                            <option value="samples/self.png">顔写真</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="clear-btn" class="button button-secondary" data-i18n="input.clear">クリア</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Control Section -->
+            <section class="control-section" data-section="controls">
+                <h2 class="section-title" data-i18n="sections.controls">制御</h2>
+                <div class="section-content">
+                    <div class="control-group">
+                        <label class="label" data-i18n="controls.scale">スケール</label>
+                        <input type="range" id="scale-slider" class="slider" min="50" max="500" value="150" step="10">
+                        <span id="scale-value" class="value-display">150</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="label" data-i18n="controls.rotationX">回転 X (経度)</label>
+                        <input type="range" id="rotation-x-slider" class="slider" min="-180" max="180" value="0" step="1">
+                        <span id="rotation-x-value" class="value-display">0°</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="label" data-i18n="controls.rotationY">回転 Y (緯度)</label>
+                        <input type="range" id="rotation-y-slider" class="slider" min="-90" max="90" value="0" step="1">
+                        <span id="rotation-y-value" class="value-display">0°</span>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="reset-btn" class="button button-secondary" data-i18n="controls.reset">リセット</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Section -->
+            <section class="control-section" data-section="info">
+                <h2 class="section-title" data-i18n="sections.info">投影法情報</h2>
+                <div class="section-content" id="info-content">
+                    <p data-i18n="info.selectProjection">投影法を選択してください</p>
+                </div>
+            </section>
+
+            <!-- Performance Section -->
+            <section class="control-section" data-section="performance">
+                <h2 class="section-title" data-i18n="sections.performance">パフォーマンス</h2>
+                <div class="section-content">
+                    <div class="performance-info">
+                        <p><span data-i18n="performance.fps">FPS:</span> <span id="fps-counter">0</span></p>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <section class="canvas-container">
+            <canvas id="webgl-canvas"></canvas>
+            <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p data-i18n="status.loading">処理中...</p>
+            </div>
+            <video id="webcam-video" style="display: none;"></video>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p data-i18n="footer.credits">© 2024 Projection Face WebGL</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/language-manager.js"></script>
+    <script src="js/projections.js"></script>
+    <script src="js/webgl-renderer.js"></script>
+    <script src="js/ui-controls.js"></script>
+    <script src="js/input-handler.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
