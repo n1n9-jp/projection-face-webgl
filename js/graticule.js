@@ -35,7 +35,7 @@ class GraticuleRenderer {
         const k = 1 / (1 + cosc);
 
         const x = 0.5 + k * Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - k * Math.sin(latRad) * 0.5;
+        const y = 0.5 + k * Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
@@ -65,7 +65,7 @@ class GraticuleRenderer {
         if (cosc < 0) return null; // Back side is hidden
 
         const x = 0.5 + Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - Math.sin(latRad) * 0.5;
+        const y = 0.5 + Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
@@ -79,7 +79,7 @@ class GraticuleRenderer {
         if (cosc <= 0) return null; // Back side is hidden
 
         const x = 0.5 + Math.atan2(Math.cos(latRad) * Math.sin(lonRad), cosc) * 0.5 / Math.PI;
-        const y = 0.5 - Math.atan2(Math.sin(latRad), Math.sqrt(Math.pow(cosc, 2) + Math.pow(Math.cos(latRad) * Math.sin(lonRad), 2))) * 0.5 / Math.PI;
+        const y = 0.5 + Math.atan2(Math.sin(latRad), Math.sqrt(Math.pow(cosc, 2) + Math.pow(Math.cos(latRad) * Math.sin(lonRad), 2))) * 0.5 / Math.PI;
 
         return { x, y };
     }
@@ -110,7 +110,7 @@ class GraticuleRenderer {
 
         const k = c / Math.sin(c);
         const x = 0.5 + k * Math.cos(latRad) * Math.sin(lonRad) * 0.5;
-        const y = 0.5 - k * Math.sin(latRad) * 0.5;
+        const y = 0.5 + k * Math.sin(latRad) * 0.5;
 
         return { x, y };
     }
