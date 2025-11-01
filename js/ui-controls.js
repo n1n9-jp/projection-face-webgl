@@ -174,6 +174,10 @@ class UIControls {
         // Apply easeInOutBack easing function
         const easedProgress = this.easeInOutBack(linearProgress);
 
+        // Apply amplitude multiplier (1.5 means the value can go from 0.0 to 1.5)
+        // This creates an overshoot/inertia effect where it goes beyond the target and back
+        const amplified = easedProgress * 1.5;
+
         // Complete transition
         if (linearProgress >= 1.0) {
             this.isTransitioning = false;
@@ -181,7 +185,7 @@ class UIControls {
             this.previousProjection = null;
         }
 
-        return easedProgress;
+        return amplified;
     }
 
     // easeInOutBack: https://easings.net/#easeInOutBack
