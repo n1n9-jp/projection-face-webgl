@@ -4,11 +4,11 @@
 
 ## 特徴
 
-🚀 **リアルタイムレンダリング**: WebGL 2.0 による GPU 並列処理で 60fps 実現
-🗺️ **8種類の投影法対応**: Mercator、Stereographic、Equal Earth、Mollweide、Azimuthal Equidistant、Orthographic、Gnomonic、Natural Earth
-📸 **複数入力対応**: ファイルアップロード、Webカメラ、サンプル画像
-🌐 **多言語対応**: 日本語・英語
-📱 **レスポンシブデザイン**: デスクトップ・モバイル対応
+- 🚀 **リアルタイムレンダリング**: WebGL 2.0 による GPU 並列処理で 60fps 実現
+- 🗺️ **8種類の投影法対応**: Mercator、Stereographic、Equal Earth、Mollweide、Azimuthal Equidistant、Orthographic、Gnomonic、Natural Earth
+- 📸 **複数入力対応**: ファイルアップロード、Webカメラ、サンプル画像
+- 🌐 **多言語対応**: 日本語・英語
+- 📱 **レスポンシブデザイン**: デスクトップ・モバイル対応
 
 ## 技術スタック
 
