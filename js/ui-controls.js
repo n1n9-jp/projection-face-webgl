@@ -12,6 +12,13 @@ class UIControls {
         this.clearBtn = document.getElementById('clear-btn');
         this.langToggle = document.getElementById('lang-toggle');
 
+        // Transition management
+        this.transitionDuration = 1000; // milliseconds (1 second)
+        this.transitionStartTime = null;
+        this.previousProjection = null;
+        this.nextProjection = null;
+        this.isTransitioning = false;
+
         this.callbacks = {
             projectionChange: [],
             paramChange: [],
@@ -47,9 +54,7 @@ class UIControls {
     setupEventListeners() {
         // Projection selector
         this.projectionSelector.addEventListener('change', (e) => {
-            projectionManager.setProjection(e.target.value);
-            this.updateProjectionInfo();
-            this.callbacks.projectionChange.forEach(cb => cb(e.target.value));
+            this.startProjectionTransition(e.target.value);
         });
 
         // Scale slider
@@ -136,6 +141,66 @@ class UIControls {
 
     getProjectionSelector() {
         return this.projectionSelector;
+    }
+
+    // Transition management
+    startProjectionTransition(newProjectionId) {
+        // Store previous projection
+        this.previousProjection = projectionManager.getCurrentProjection();
+        this.nextProjection = projectionManager.getProjections().find(p => p.id === newProjectionId);
+
+        // Start transition
+        this.transitionStartTime = performance.now();
+        this.isTransitioning = true;
+
+        // Update projection manager
+        projectionManager.setProjection(newProjectionId);
+
+        // Update UI
+        this.updateProjectionInfo();
+
+        // Notify listeners
+        this.callbacks.projectionChange.forEach(cb => cb(newProjectionId));
+    }
+
+    getTransitionProgress() {
+        if (!this.isTransitioning || !this.transitionStartTime) {
+            return 1.0;
+        }
+
+        const elapsed = performance.now() - this.transitionStartTime;
+        let linearProgress = Math.min(elapsed / this.transitionDuration, 1.0);
+
+        // Apply easeOutElastic easing function
+        const easedProgress = this.easeOutElastic(linearProgress);
+
+        // Complete transition
+        if (linearProgress >= 1.0) {
+            this.isTransitioning = false;
+            this.transitionStartTime = null;
+            this.previousProjection = null;
+        }
+
+        return easedProgress;
+    }
+
+    // easeOutElastic: https://easings.net/#easeOutElastic
+    // Creates a bouncy animation effect at the end
+    easeOutElastic(t) {
+        if (t === 0) return 0;
+        if (t === 1) return 1;
+
+        const c5 = (2 * Math.PI) / 4.5;
+        return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c5) + 1;
+    }
+
+    getCurrentTransitionInfo() {
+        return {
+            isTransitioning: this.isTransitioning,
+            fromProjection: this.previousProjection,
+            toProjection: this.nextProjection,
+            progress: this.getTransitionProgress()
+        };
     }
 }
 

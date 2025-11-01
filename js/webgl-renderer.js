@@ -98,6 +98,8 @@ class WebGLRenderer {
 
             uniform sampler2D uTexture;
             uniform int uProjectionType;
+            uniform int uPreviousProjectionType;
+            uniform float uTransitionProgress;
             uniform float uScale;
             uniform float uRotationX;
             uniform float uRotationY;
@@ -308,7 +310,7 @@ class WebGLRenderer {
                 // Normalized screen coordinates [0, 1]
                 vec2 ndc = gl_FragCoord.xy / uCanvasSize;
 
-                // Get longitude and latitude from projection
+                // Get longitude and latitude from current projection
                 vec2 lonLat = getInverseProjection(ndc);
 
                 // Apply rotation parameters
@@ -317,8 +319,38 @@ class WebGLRenderer {
                 // Convert to texture coordinates
                 vec2 texCoord = lonLatToTexture(lonLat);
 
-                // Sample texture with bilinear filtering
-                outColor = texture(uTexture, texCoord);
+                // Sample texture from current projection
+                vec4 currentColor = texture(uTexture, texCoord);
+
+                // If transitioning, blend with previous projection
+                if (uTransitionProgress < 1.0) {
+                    // Temporarily switch to previous projection
+                    int savedProjectionType = uProjectionType;
+                    // Calculate previous projection coordinates
+                    vec2 prevLonLat;
+                    if (uPreviousProjectionType == 0) prevLonLat = inverseMercator(ndc);
+                    else if (uPreviousProjectionType == 1) prevLonLat = inverseStereographic(ndc);
+                    else if (uPreviousProjectionType == 2) prevLonLat = inverseEqualEarth(ndc);
+                    else if (uPreviousProjectionType == 3) prevLonLat = inverseMollweide(ndc);
+                    else if (uPreviousProjectionType == 4) prevLonLat = inverseAzimuthalEquidistant(ndc);
+                    else if (uPreviousProjectionType == 5) prevLonLat = inverseOrthographic(ndc);
+                    else if (uPreviousProjectionType == 6) prevLonLat = inverseGnomonic(ndc);
+                    else if (uPreviousProjectionType == 7) prevLonLat = inverseNaturalEarth(ndc);
+                    else prevLonLat = vec2(0.0);
+
+                    // Apply rotation and convert to texture coordinates
+                    prevLonLat = applyRotation(prevLonLat);
+                    vec2 prevTexCoord = lonLatToTexture(prevLonLat);
+
+                    // Sample from previous projection
+                    vec4 prevColor = texture(uTexture, prevTexCoord);
+
+                    // Blend colors based on transition progress
+                    // 0.0 = 100% previous, 1.0 = 100% current
+                    currentColor = mix(prevColor, currentColor, uTransitionProgress);
+                }
+
+                outColor = currentColor;
             }
         `;
     }
@@ -394,29 +426,43 @@ class WebGLRenderer {
         // Update uniforms
         const projectionType = projectionManager.getProjections().findIndex(p => p.id === projectionManager.getCurrentProjection().id);
         const params = projectionManager.getParams();
+        const transitionInfo = uiControls.getCurrentTransitionInfo();
 
         const projectionTypeLoc = this.gl.getUniformLocation(this.program, 'uProjectionType');
+        const previousProjectionTypeLoc = this.gl.getUniformLocation(this.program, 'uPreviousProjectionType');
+        const transitionProgressLoc = this.gl.getUniformLocation(this.program, 'uTransitionProgress');
         const scaleLoc = this.gl.getUniformLocation(this.program, 'uScale');
         const rotationXLoc = this.gl.getUniformLocation(this.program, 'uRotationX');
         const rotationYLoc = this.gl.getUniformLocation(this.program, 'uRotationY');
         const canvasSizeLoc = this.gl.getUniformLocation(this.program, 'uCanvasSize');
         const textureLoc = this.gl.getUniformLocation(this.program, 'uTexture');
 
+        // Set current projection
         this.gl.uniform1i(projectionTypeLoc, projectionType);
+
+        // Set transition information
+        if (transitionInfo.isTransitioning && transitionInfo.fromProjection) {
+            const previousProjectionType = projectionManager.getProjections().findIndex(p => p.id === transitionInfo.fromProjection.id);
+            this.gl.uniform1i(previousProjectionTypeLoc, previousProjectionType);
+            this.gl.uniform1f(transitionProgressLoc, transitionInfo.progress);
+        } else {
+            this.gl.uniform1f(transitionProgressLoc, 1.0);
+        }
+
         this.gl.uniform1f(scaleLoc, params.scale);
         this.gl.uniform1f(rotationXLoc, params.rotationX);
         this.gl.uniform1f(rotationYLoc, params.rotationY);
         this.gl.uniform2f(canvasSizeLoc, this.canvas.width, this.canvas.height);
         this.gl.uniform1i(textureLoc, 0);
 
-        // Bind texture
+        // Only render if texture is loaded
         if (this.texture) {
             this.gl.activeTexture(this.gl.TEXTURE0);
             this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
-        }
 
-        // Draw
-        this.gl.drawElements(this.gl.TRIANGLES, 6, this.gl.UNSIGNED_SHORT, 0);
+            // Draw
+            this.gl.drawElements(this.gl.TRIANGLES, 6, this.gl.UNSIGNED_SHORT, 0);
+        }
     }
 
     clear() {

@@ -133,8 +133,18 @@ class InputHandler {
     }
 
     startWebcamStream() {
+        let lastFrameTime = 0;
+        const frameInterval = 1000 / 15; // 15 fps for webcam stream
+
         const streamFrame = () => {
-            if (this.isWebcamActive && this.webcamVideo.readyState === this.webcamVideo.HAVE_ENOUGH_DATA) {
+            if (!this.isWebcamActive) {
+                return;
+            }
+
+            const currentTime = performance.now();
+            if (currentTime - lastFrameTime >= frameInterval && this.webcamVideo.readyState === this.webcamVideo.HAVE_ENOUGH_DATA) {
+                lastFrameTime = currentTime;
+
                 // Create a canvas from the video frame
                 const canvas = document.createElement('canvas');
                 canvas.width = this.webcamVideo.videoWidth;
@@ -147,11 +157,11 @@ class InputHandler {
                     this.currentImage = img;
                     this.callbacks.imageLoaded.forEach(cb => cb(img));
                 };
-                requestAnimationFrame(streamFrame);
-            } else if (this.isWebcamActive) {
-                requestAnimationFrame(streamFrame);
             }
+
+            requestAnimationFrame(streamFrame);
         };
+
         requestAnimationFrame(streamFrame);
     }
 
